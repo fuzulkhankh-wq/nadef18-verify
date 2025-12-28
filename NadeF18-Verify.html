@@ -1,0 +1,1051 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#4f46e5">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="NadeF18">
+    <title>NadeF18-Verify</title>
+    <link rel="manifest" href="manifest.json">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        
+        /* Animation for sending message */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        .sending {
+            animation: pulse 1.5s infinite;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-md">
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+            <!-- Header -->
+            <div class="bg-indigo-600 text-white p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="text-2xl font-bold">NadeF18-Verify</h1>
+                        <p class="text-indigo-100">Send messages with dynamic options</p>
+                    </div>
+                    <div class="bg-white text-indigo-600 p-3 rounded-full">
+                        <i class="fas fa-comment-sms text-2xl"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="p-6">
+                <!-- Contact Management -->
+                <div class="mb-6 bg-gray-50 p-4 rounded-lg border">
+                    <h3 class="font-bold text-lg text-gray-800 mb-3">
+                        <i class="fas fa-address-book mr-2 text-indigo-600"></i>Contact Management
+                    </h3>
+                    
+                    <!-- Add New Contact Form -->
+                    <div class="mb-4 p-3 bg-white rounded border">
+                        <div class="grid grid-cols-2 gap-3 mb-3">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                                <input type="text" id="contactName" placeholder="Enter name" class="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                                <input type="tel" id="contactPhone" placeholder="+1234567890" class="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                            </div>
+                        </div>
+                        <button id="addContactBtn" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded transition duration-200">
+                            <i class="fas fa-plus mr-2"></i>Add Contact
+                        </button>
+                    </div>
+                    
+                    <!-- Contact List -->
+                    <div class="mb-3">
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="block text-sm font-medium text-gray-700">Saved Contacts</label>
+                            <span class="text-xs text-green-600 bg-green-100 px-2 py-1 rounded-full">
+                                <i class="fas fa-save mr-1"></i>Auto-saved
+                            </span>
+                        </div>
+                        <div id="contactList" class="max-h-32 overflow-y-auto border border-gray-300 rounded bg-white">
+                            <!-- Contacts will be displayed here -->
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">
+                            <i class="fas fa-info-circle mr-1"></i>Contacts are automatically saved and will persist when you close/reopen the app
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Contact Selection -->
+                <div class="mb-6">
+                    <label class="block text-gray-700 font-medium mb-2">
+                        <i class="fas fa-user mr-2"></i>Select Contacts for SMS
+                    </label>
+                    <div id="contactSelection" class="border border-gray-300 rounded-lg p-3 bg-gray-50 min-h-20">
+                        <div id="selectedContacts" class="flex flex-wrap gap-2">
+                            <!-- Selected contacts will appear here -->
+                        </div>
+                        <div id="noContactsMessage" class="text-gray-500 text-center py-4">
+                            <i class="fas fa-users text-2xl mb-2 block"></i>
+                            <p>No contacts selected</p>
+                            <p class="text-sm">Click on contacts below to select them</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Available Contacts -->
+                    <div class="mt-3">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Available Contacts</label>
+                        <div id="availableContacts" class="grid grid-cols-1 gap-2 max-h-32 overflow-y-auto">
+                            <!-- Available contacts will be displayed here -->
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Message Template -->
+                <div class="mb-6">
+                    <label class="block text-gray-700 font-medium mb-2" for="message">
+                        <i class="fas fa-comment-dots mr-2"></i>Message Template
+                    </label>
+                    <div class="border border-gray-300 rounded-lg p-3 bg-gray-50 min-h-40 text-right" dir="rtl">
+                        <div class="flex flex-wrap items-center gap-2 mb-2">
+                            <span class="text-gray-700">بیمارستان</span>
+                            <div id="selectedHospitalName" class="border border-gray-300 rounded px-2 py-1 bg-white min-w-24 text-center text-gray-500">
+                                [انتخاب کنید]
+                            </div>
+                            <span class="text-gray-700">دارو به شماره بچ</span>
+                            <input type="text" id="batchNumber" placeholder="شماره بچ" class="border border-gray-300 rounded px-2 py-1 w-32 text-right" dir="rtl">
+                            <span class="text-gray-700">مورد تایید می باشد</span>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2 text-center">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            شماره پلمپ را برای هر بیمارستان در بخش زیر وارد کنید
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Preview Section -->
+                <div class="mb-6 bg-blue-50 p-4 rounded-lg border border-blue-200">
+                    <label class="block text-blue-700 font-medium mb-2">
+                        <i class="fas fa-eye mr-2"></i>Message Preview
+                    </label>
+                    <div id="messagePreview" class="bg-white p-3 rounded border border-blue-300 whitespace-pre-wrap min-h-20 text-right" dir="rtl">
+                        گزینه‌ها را انتخاب کنید تا پیش‌نمایش را ببینید
+                    </div>
+                </div>
+                
+                <!-- Info: Individual Send Buttons -->
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                    <p class="text-sm text-blue-800 text-center" dir="rtl">
+                        <i class="fas fa-info-circle mr-2"></i>
+                        برای هر مخاطب، دکمه "Send" جداگانه وجود دارد. روی دکمه "Send" هر مخاطب کلیک کنید تا اپلیکیشن SMS باز شود.
+                    </p>
+                </div>
+                
+                <!-- Send Button (Hidden - kept for API batch sending if needed) -->
+                <button id="sendBtn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition duration-200 flex items-center justify-center hidden">
+                    <i class="fas fa-paper-plane mr-2"></i> Send Messages
+                </button>
+                
+                <!-- Status -->
+                <div id="status" class="mt-4 text-center hidden">
+                    <div class="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium">
+                        <span class="mr-2"><i class="fas fa-circle-notch fa-spin"></i></span>
+                        <span>Sending messages...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const dropdownOptions = document.querySelectorAll('.dropdown-option');
+            const messagePreview = document.getElementById('messagePreview');
+            const sendBtn = document.getElementById('sendBtn');
+            const statusDiv = document.getElementById('status');
+            const addContactBtn = document.getElementById('addContactBtn');
+            const contactNameInput = document.getElementById('contactName');
+            const contactPhoneInput = document.getElementById('contactPhone');
+            const contactList = document.getElementById('contactList');
+            
+            // Debug: Check if elements exist
+            if (!addContactBtn) {
+                console.error('addContactBtn not found!');
+            }
+            if (!contactNameInput) {
+                console.error('contactNameInput not found!');
+            }
+            if (!contactPhoneInput) {
+                console.error('contactPhoneInput not found!');
+            }
+            if (!contactList) {
+                console.error('contactList not found!');
+            }
+            const selectedContactsDiv = document.getElementById('selectedContacts');
+            const noContactsMessage = document.getElementById('noContactsMessage');
+            const availableContactsDiv = document.getElementById('availableContacts');
+            
+            // Load contacts from localStorage
+            let contacts = JSON.parse(localStorage.getItem('smsContacts')) || [];
+            let selectedContacts = [];
+            // Store seal numbers for each contact (by phone number)
+            let sealNumbers = {};
+            // Track sent status for each contact
+            let sentStatus = {};
+            
+            // API configuration removed - no longer needed
+            
+            // Display contacts in the list
+            function displayContacts() {
+                console.log('displayContacts called. Total contacts:', contacts.length);
+                
+                if (!contactList) {
+                    console.error('contactList not found!');
+                    return;
+                }
+                
+                contactList.innerHTML = '';
+                
+                if (contacts.length === 0) {
+                    contactList.innerHTML = '<p class="text-gray-500 text-center py-4 text-sm">No contacts saved yet.</p>';
+                } else {
+                    contacts.forEach((contact, index) => {
+                        const contactDiv = document.createElement('div');
+                        contactDiv.className = 'flex items-center justify-between p-2 border-b border-gray-200 hover:bg-gray-50';
+                        contactDiv.innerHTML = `
+                            <div class="flex-1">
+                                <div class="font-medium">${contact.name}</div>
+                                <div class="text-gray-500 text-sm">${contact.phone}</div>
+                            </div>
+                            <button onclick="deleteContact(${index})" class="text-red-500 hover:text-red-700 ml-2">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        `;
+                        contactList.appendChild(contactDiv);
+                    });
+                }
+                
+                // Update available contacts for selection
+                updateAvailableContacts();
+            }
+            
+            // Update available contacts for selection
+            function updateAvailableContacts() {
+                if (!availableContactsDiv) {
+                    console.error('availableContactsDiv not found!');
+                    return;
+                }
+                
+                console.log('Updating available contacts. Total contacts:', contacts.length);
+                availableContactsDiv.innerHTML = '';
+                
+                if (contacts.length === 0) {
+                    availableContactsDiv.innerHTML = '<p class="text-gray-500 text-center py-4 text-sm">No contacts available. Add contacts above.</p>';
+                    return;
+                }
+                
+                contacts.forEach((contact, index) => {
+                    const isSelected = selectedContacts.some(selected => selected.phone === contact.phone);
+                    const contactCard = document.createElement('div');
+                    contactCard.className = `p-3 border rounded-lg cursor-pointer transition-all duration-200 ${
+                        isSelected 
+                            ? 'bg-indigo-100 border-indigo-300 text-indigo-700' 
+                            : 'bg-white border-gray-200 hover:bg-gray-50'
+                    }`;
+                    contactCard.innerHTML = `
+                        <div class="flex items-center justify-between">
+                            <div class="flex-1">
+                                <div class="font-medium">${contact.name}</div>
+                                <div class="text-sm text-gray-500">${contact.phone}</div>
+                            </div>
+                            <div class="text-indigo-600 ml-2">
+                                <i class="fas ${isSelected ? 'fa-check-circle' : 'fa-circle'}"></i>
+                            </div>
+                        </div>
+                    `;
+                    contactCard.onclick = () => toggleContactSelection(contact);
+                    availableContactsDiv.appendChild(contactCard);
+                });
+                
+                console.log('Available contacts updated. Displayed:', contacts.length);
+            }
+            
+            // Toggle contact selection
+            function toggleContactSelection(contact) {
+                const index = selectedContacts.findIndex(selected => selected.phone === contact.phone);
+                if (index > -1) {
+                    selectedContacts.splice(index, 1);
+                } else {
+                    selectedContacts.push(contact);
+                }
+                updateSelectedContactsDisplay();
+                updateAvailableContacts();
+                updateHospitalNameDisplay();
+                updatePreview();
+            }
+            
+            // Update selected contacts display
+            function updateSelectedContactsDisplay() {
+                selectedContactsDiv.innerHTML = '';
+                
+                if (selectedContacts.length === 0) {
+                    noContactsMessage.style.display = 'block';
+                    return;
+                }
+                
+                noContactsMessage.style.display = 'none';
+                
+                selectedContacts.forEach((contact, index) => {
+                    const contactCard = document.createElement('div');
+                    contactCard.className = 'bg-indigo-50 border border-indigo-200 rounded-lg p-3 mb-2';
+                    const sealInputId = `sealNumber_${contact.phone.replace(/[^a-zA-Z0-9]/g, '_')}`;
+                    const sendBtnId = `sendBtn_${contact.phone.replace(/[^a-zA-Z0-9]/g, '_')}`;
+                    const currentSealNumber = sealNumbers[contact.phone] || '';
+                    const escapedPhone = contact.phone.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                    const isSent = sentStatus[contact.phone] || false;
+                    
+                    contactCard.innerHTML = `
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="font-medium text-indigo-700">${contact.name}</span>
+                            <button onclick="removeSelectedContact('${escapedPhone}')" class="text-red-500 hover:text-red-700">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="flex items-center gap-2 mb-2" dir="rtl">
+                            <label class="text-sm text-gray-700 whitespace-nowrap">شماره پلمپ:</label>
+                            <input type="text" 
+                                   id="${sealInputId}" 
+                                   value="${currentSealNumber.replace(/"/g, '&quot;')}"
+                                   placeholder="شماره پلمپ را وارد کنید" 
+                                   class="flex-1 border border-gray-300 rounded px-2 py-1 text-right text-sm" 
+                                   dir="rtl">
+                        </div>
+                        <div class="flex justify-end">
+                            <button id="${sendBtnId}" 
+                                    onclick="sendSMSToContact('${escapedPhone}')" 
+                                    class="px-4 py-2 rounded-lg font-medium transition-all duration-200 ${isSent ? 'bg-green-500 text-white' : 'bg-indigo-600 hover:bg-indigo-700 text-white'}">
+                                <i class="fas ${isSent ? 'fa-check-circle' : 'fa-paper-plane'} mr-2"></i>
+                                ${isSent ? 'Sent' : 'Send'}
+                            </button>
+                        </div>
+                    `;
+                    selectedContactsDiv.appendChild(contactCard);
+                    
+                    // Add event listener after element is added to DOM
+                    const sealInput = document.getElementById(sealInputId);
+                    if (sealInput) {
+                        sealInput.addEventListener('input', function() {
+                            sealNumbers[contact.phone] = this.value.trim();
+                            updatePreview();
+                        });
+                    }
+                });
+            }
+            
+            // Update seal number for a contact
+            window.updateSealNumber = function(phone, value) {
+                sealNumbers[phone] = value.trim();
+            };
+            
+            // Update hospital name display
+            function updateHospitalNameDisplay() {
+                const selectedHospitalName = document.getElementById('selectedHospitalName');
+                
+                if (selectedContacts.length > 0) {
+                    selectedHospitalName.textContent = selectedContacts.length === 1 ? selectedContacts[0].name : `${selectedContacts.length} مخاطب`;
+                    selectedHospitalName.className = 'border border-indigo-300 rounded px-2 py-1 bg-indigo-50 min-w-24 text-center text-indigo-700 font-medium';
+                } else {
+                    selectedHospitalName.textContent = '[انتخاب کنید]';
+                    selectedHospitalName.className = 'border border-gray-300 rounded px-2 py-1 bg-white min-w-24 text-center text-gray-500';
+                }
+            }
+            
+            // Remove selected contact (global function)
+            window.removeSelectedContact = function(phone) {
+                selectedContacts = selectedContacts.filter(contact => contact.phone !== phone);
+                updateSelectedContactsDisplay();
+                updateAvailableContacts();
+                updateHospitalNameDisplay();
+                updatePreview();
+            };
+            
+            // Add new contact
+            if (addContactBtn) {
+                addContactBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    console.log('Add contact button clicked');
+                    
+                    if (!contactNameInput || !contactPhoneInput) {
+                        alert('Error: Contact form elements not found. Please refresh the page.');
+                        console.error('Contact form elements missing');
+                        return;
+                    }
+                    
+                    const name = contactNameInput.value.trim();
+                    const phone = contactPhoneInput.value.trim();
+                    
+                    console.log('Name:', name, 'Phone:', phone);
+                    
+                    if (!name || !phone) {
+                        alert('Please enter both name and phone number');
+                        return;
+                    }
+                    
+                    // Simple phone validation
+                    if (!/^\+?[\d\s\-\(\)]+$/.test(phone)) {
+                        alert('Please enter a valid phone number');
+                        return;
+                    }
+                    
+                    // Check if contact already exists
+                    if (contacts.some(contact => contact.phone === phone)) {
+                        alert('Contact with this phone number already exists');
+                        return;
+                    }
+                    
+                    // Add contact (without seal number - it will be entered each time)
+                    contacts.push({ name, phone });
+                    localStorage.setItem('smsContacts', JSON.stringify(contacts));
+                    
+                    console.log('Contact added:', { name, phone });
+                    console.log('Total contacts:', contacts.length);
+                    console.log('Contacts array:', JSON.stringify(contacts));
+                    
+                    // Verify localStorage was saved
+                    const savedContacts = JSON.parse(localStorage.getItem('smsContacts') || '[]');
+                    console.log('Saved to localStorage:', savedContacts.length, 'contacts');
+                    
+                    // Clear inputs
+                    contactNameInput.value = '';
+                    contactPhoneInput.value = '';
+                    
+                    // Force reload contacts from localStorage to ensure sync
+                    contacts = JSON.parse(localStorage.getItem('smsContacts') || '[]');
+                    console.log('Reloaded contacts from localStorage:', contacts.length);
+                    
+                    // Update display
+                    displayContacts();
+                    
+                    // Force update available contacts again to ensure it's refreshed
+                    setTimeout(() => {
+                        updateAvailableContacts();
+                    }, 100);
+                    
+                    // Show success message
+                    if (contactList && contactList.parentNode) {
+                        const successDiv = document.createElement('div');
+                        successDiv.className = 'bg-green-100 text-green-800 p-2 rounded text-sm mt-2';
+                        successDiv.innerHTML = `
+                            <i class="fas fa-check-circle mr-1"></i>
+                            Contact "${name}" added successfully! 
+                            <span class="text-xs">(Saved permanently)</span>
+                        `;
+                        contactList.parentNode.insertBefore(successDiv, contactList.nextSibling);
+                        
+                        setTimeout(() => {
+                            if (successDiv.parentNode) {
+                                successDiv.remove();
+                            }
+                        }, 3000);
+                    }
+                });
+            } else {
+                console.error('Add contact button not found! Cannot attach event listener.');
+            }
+            
+            // Delete contact function (global for onclick)
+            window.deleteContact = function(index) {
+                if (confirm(`Are you sure you want to delete ${contacts[index].name}?`)) {
+                    contacts.splice(index, 1);
+                    localStorage.setItem('smsContacts', JSON.stringify(contacts));
+                    displayContacts();
+                }
+            };
+            
+            // Helper function to get seal number from sealNumbers object or input field
+            function getSealNumber(contact) {
+                // First check if we have it in sealNumbers object
+                if (sealNumbers[contact.phone]) {
+                    return sealNumbers[contact.phone];
+                }
+                // Fallback to input field if exists
+                const sealInputId = `sealNumber_${contact.phone.replace(/[^a-zA-Z0-9]/g, '_')}`;
+                const sealInput = document.getElementById(sealInputId);
+                if (sealInput) {
+                    const value = sealInput.value.trim();
+                    if (value) {
+                        sealNumbers[contact.phone] = value;
+                    }
+                    return value;
+                }
+                return '';
+            }
+            
+            // Update message preview
+            function updatePreview() {
+                const batchNumber = document.getElementById('batchNumber').value;
+                
+                if (selectedContacts.length === 0) {
+                    messagePreview.textContent = 'گزینه‌ها را انتخاب کنید تا پیش‌نمایش را ببینید';
+                    return;
+                }
+                
+                // Show preview for all selected contacts
+                if (selectedContacts.length === 1) {
+                    // Single contact - show simple preview
+                    const contact = selectedContacts[0];
+                    const hospitalName = contact.name;
+                    const sealNumber = getSealNumber(contact) || "[شماره پلمپ]";
+                    let message = `بیمارستان ${hospitalName} دارو به شماره بچ ${batchNumber || "[شماره بچ]"} و شماره پلمپ ${sealNumber} مورد تایید می باشد`;
+                    messagePreview.textContent = message;
+                } else {
+                    // Multiple contacts - show preview for each
+                    let previewText = `پیام برای ${selectedContacts.length} مخاطب:\n\n`;
+                    selectedContacts.forEach((contact, index) => {
+                        const hospitalName = contact.name;
+                        const sealNumber = getSealNumber(contact) || "[شماره پلمپ]";
+                        let message = `بیمارستان ${hospitalName} دارو به شماره بچ ${batchNumber || "[شماره بچ]"} و شماره پلمپ ${sealNumber} مورد تایید می باشد`;
+                        previewText += `${index + 1}. ${contact.name}:\n${message}\n\n`;
+                    });
+                    messagePreview.textContent = previewText.trim();
+                }
+            }
+
+            // Update preview when batch number changes
+            document.getElementById('batchNumber').addEventListener('input', updatePreview);
+            
+            // Helper function to format phone number for SMS
+            function formatPhoneForSMS(phone) {
+                if (!phone) return '';
+                
+                // Remove all spaces, dashes, parentheses, and other special chars
+                let cleaned = phone.toString().replace(/[\s\-\(\)\.]/g, '');
+                
+                // Keep only digits and +
+                cleaned = cleaned.replace(/[^\d+]/g, '');
+                
+                // Ensure phone number is valid
+                if (!cleaned || cleaned.length < 7) {
+                    return phone; // Return original if invalid
+                }
+                
+                // If starts with +, keep it
+                if (cleaned.startsWith('+')) {
+                    return cleaned;
+                }
+                
+                // If starts with 00, replace with +
+                if (cleaned.startsWith('00')) {
+                    return '+' + cleaned.substring(2);
+                }
+                
+                // Return cleaned number (just digits)
+                return cleaned;
+            }
+            
+            // Function to send SMS to a specific contact
+            window.sendSMSToContact = async function(phone) {
+                // Find the contact
+                const contact = selectedContacts.find(c => c.phone === phone);
+                if (!contact) {
+                    alert('مخاطب پیدا نشد');
+                    return;
+                }
+                
+                // Check batch number
+                const batchNumber = document.getElementById('batchNumber').value.trim();
+                if (!batchNumber) {
+                    alert('لطفاً شماره بچ را وارد کنید');
+                    return;
+                }
+                
+                // Get seal number
+                const sealNumber = getSealNumber(contact);
+                if (!sealNumber.trim()) {
+                    alert(`لطفاً شماره پلمپ را برای ${contact.name} وارد کنید`);
+                    return;
+                }
+                
+                // Build message
+                const personalizedMessage = `بیمارستان ${contact.name} دارو به شماره بچ ${batchNumber} و شماره پلمپ ${sealNumber} مورد تایید می باشد`;
+                
+                // Format phone number
+                const formattedPhone = formatPhoneForSMS(contact.phone);
+                
+                // Get API endpoint (if exists)
+                const apiEndpointEl = document.getElementById('apiEndpoint');
+                const apiKeyEl = document.getElementById('apiKey');
+                const apiEndpoint = apiEndpointEl ? apiEndpointEl.value.trim() : '';
+                const apiKey = apiKeyEl ? apiKeyEl.value.trim() : '';
+                
+                // Update button to show sending status
+                const sendBtnId = `sendBtn_${contact.phone.replace(/[^a-zA-Z0-9]/g, '_')}`;
+                const sendButton = document.getElementById(sendBtnId);
+                if (sendButton) {
+                    sendButton.disabled = true;
+                    sendButton.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2"></i>Opening...';
+                }
+                
+                try {
+                    if (apiEndpoint) {
+                        // Use API to send automatically
+                        const response = await fetch(apiEndpoint, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                ...(apiKey && { 'Authorization': `Bearer ${apiKey}` }),
+                                ...(apiKey && { 'X-API-Key': apiKey })
+                            },
+                            body: JSON.stringify({
+                                phone: contact.phone,
+                                message: personalizedMessage
+                            })
+                        });
+                        
+                        if (response.ok) {
+                            const result = await response.json();
+                            if (result.success !== false) {
+                                // Mark as sent
+                                sentStatus[contact.phone] = true;
+                                updateSelectedContactsDisplay();
+                                return;
+                            }
+                        }
+                        throw new Error('API request failed');
+                    } else {
+                        // Open SMS app
+                        if (navigator.userAgent.match(/Mobile|Android|iPhone|iPad/i)) {
+                            // Create SMS link
+                            let smsLink;
+                            
+                            if (navigator.userAgent.match(/Android/i)) {
+                                smsLink = `sms:${formattedPhone}?body=${encodeURIComponent(personalizedMessage)}`;
+                            } else {
+                                smsLink = `sms:${formattedPhone}&body=${encodeURIComponent(personalizedMessage)}`;
+                            }
+                            
+                            // Track if page becomes visible again (user returned from SMS app)
+                            let pageVisibilityHandler = null;
+                            let hasAsked = false;
+                            
+                            // Function to check if message was sent
+                            const checkIfSent = () => {
+                                if (hasAsked) return;
+                                hasAsked = true;
+                                
+                                // Ask user if message was sent
+                                const sent = confirm('آیا پیام را ارسال کردید؟\n\nOK = بله (دکمه به Sent تبدیل می‌شود)\nCancel = خیر (می‌توانید دوباره تلاش کنید)');
+                                
+                                if (sent) {
+                                    sentStatus[contact.phone] = true;
+                                    updateSelectedContactsDisplay();
+                                } else {
+                                    // Reset button
+                                    if (sendButton) {
+                                        sendButton.disabled = false;
+                                        sendButton.className = 'px-4 py-2 rounded-lg font-medium transition-all duration-200 bg-indigo-600 hover:bg-indigo-700 text-white';
+                                        sendButton.innerHTML = '<i class="fas fa-paper-plane mr-2"></i>Send';
+                                    }
+                                }
+                                
+                                // Remove visibility listener
+                                if (pageVisibilityHandler) {
+                                    document.removeEventListener('visibilitychange', pageVisibilityHandler);
+                                }
+                            };
+                            
+                            // Listen for page visibility changes
+                            pageVisibilityHandler = () => {
+                                if (document.visibilityState === 'visible') {
+                                    // User returned to browser
+                                    setTimeout(checkIfSent, 1000); // Wait 1 second before asking
+                                }
+                            };
+                            
+                            document.addEventListener('visibilitychange', pageVisibilityHandler);
+                            
+                            // Also set a timeout as fallback (ask after 15 seconds if user doesn't return)
+                            setTimeout(() => {
+                                if (!hasAsked) {
+                                    checkIfSent();
+                                }
+                            }, 15000);
+                            
+                            // Open SMS app
+                            const link = document.createElement('a');
+                            link.href = smsLink;
+                            link.style.display = 'none';
+                            document.body.appendChild(link);
+                            link.click();
+                            
+                            setTimeout(() => {
+                                if (link.parentNode) {
+                                    document.body.removeChild(link);
+                                }
+                            }, 200);
+                            
+                            // Show message
+                            setTimeout(() => {
+                                alert(`اپلیکیشن SMS باز شد.\n\nشماره: ${formattedPhone}\n\nلطفاً پیام را بررسی کرده و ارسال کنید.\n\nبعد از ارسال، به مرورگر برگردید تا دکمه به "Sent" تبدیل شود.`);
+                            }, 500);
+                            
+                        } else {
+                            // Desktop - copy to clipboard
+                            await navigator.clipboard.writeText(personalizedMessage);
+                            alert(`پیام برای ${contact.name} در کلیپ‌بورد کپی شد.\n\nشماره: ${formattedPhone}\n\nپیام: ${personalizedMessage}`);
+                            
+                            // Mark as sent manually
+                            const sent = confirm('آیا پیام را ارسال کردید؟');
+                            if (sent) {
+                                sentStatus[contact.phone] = true;
+                                updateSelectedContactsDisplay();
+                            } else {
+                                if (sendButton) {
+                                    sendButton.disabled = false;
+                                    sendButton.innerHTML = '<i class="fas fa-paper-plane mr-2"></i>Send';
+                                }
+                            }
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error sending SMS:', error);
+                    alert('خطا در ارسال پیام: ' + error.message);
+                    
+                    // Reset button
+                    if (sendButton) {
+                        sendButton.disabled = false;
+                        sendButton.innerHTML = '<i class="fas fa-paper-plane mr-2"></i>Send';
+                    }
+                }
+            };
+            
+            // Send messages (old function - can be removed or kept for batch sending)
+            sendBtn.addEventListener('click', async function() {
+                if (selectedContacts.length === 0) {
+                    alert('Please select at least one contact');
+                    return;
+                }
+                
+                const batchNumber = document.getElementById('batchNumber').value;
+                if (!batchNumber.trim()) {
+                    alert('لطفاً شماره بچ را وارد کنید');
+                    return;
+                }
+                
+                // Get API configuration (if exists)
+                const apiEndpointEl = document.getElementById('apiEndpoint');
+                const apiKeyEl = document.getElementById('apiKey');
+                const apiEndpoint = apiEndpointEl ? apiEndpointEl.value.trim() : '';
+                const apiKey = apiKeyEl ? apiKeyEl.value.trim() : '';
+                
+                // Show sending status
+                statusDiv.classList.remove('hidden');
+                statusDiv.innerHTML = `
+                    <div class="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                        <span class="mr-2"><i class="fas fa-circle-notch fa-spin"></i></span>
+                        <span>Sending messages...</span>
+                    </div>
+                `;
+                sendBtn.disabled = true;
+                sendBtn.classList.add('sending');
+                
+                let successCount = 0;
+                let errorCount = 0;
+                const errors = [];
+                
+                // Send to each selected contact with personalized message
+                for (let i = 0; i < selectedContacts.length; i++) {
+                    const contact = selectedContacts[i];
+                    
+                    // Get seal number from input field
+                    const sealNumber = getSealNumber(contact);
+                    if (!sealNumber.trim()) {
+                        alert(`لطفاً شماره پلمپ را برای ${contact.name} وارد کنید`);
+                        sendBtn.disabled = false;
+                        sendBtn.classList.remove('sending');
+                        statusDiv.classList.add('hidden');
+                        return;
+                    }
+                    
+                    // Build personalized message for this specific contact with their seal number
+                    const personalizedMessage = `بیمارستان ${contact.name} دارو به شماره بچ ${batchNumber} و شماره پلمپ ${sealNumber} مورد تایید می باشد`;
+                    
+                    try {
+                        if (apiEndpoint) {
+                            // Use real API endpoint - sends automatically without user interaction
+                            const response = await fetch(apiEndpoint, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    ...(apiKey && { 'Authorization': `Bearer ${apiKey}` }),
+                                    ...(apiKey && { 'X-API-Key': apiKey })
+                                },
+                                body: JSON.stringify({
+                                    phone: contact.phone,
+                                    message: personalizedMessage
+                                })
+                            });
+                            
+                            if (!response.ok) {
+                                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                            }
+                            
+                            const result = await response.json();
+                            if (result.success !== false) {
+                                successCount++;
+                                
+                                // Update status
+                                statusDiv.innerHTML = `
+                                    <div class="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                                        <span class="mr-2"><i class="fas fa-circle-notch fa-spin"></i></span>
+                                        <span>ارسال خودکار برای ${contact.name} (${i + 1}/${selectedContacts.length})...</span>
+                                    </div>
+                                `;
+                            } else {
+                                errorCount++;
+                                errors.push(`${contact.name}: ${result.error || 'Unknown error'}`);
+                            }
+                        } else {
+                            // Helper function to format phone number for SMS
+                            function formatPhoneForSMS(phone) {
+                                if (!phone) return '';
+                                
+                                // Remove all spaces, dashes, parentheses, and other special chars
+                                let cleaned = phone.toString().replace(/[\s\-\(\)\.]/g, '');
+                                
+                                // Keep only digits and +
+                                cleaned = cleaned.replace(/[^\d+]/g, '');
+                                
+                                // Ensure phone number is valid
+                                if (!cleaned || cleaned.length < 7) {
+                                    return phone; // Return original if invalid
+                                }
+                                
+                                // If starts with +, keep it
+                                if (cleaned.startsWith('+')) {
+                                    return cleaned;
+                                }
+                                
+                                // If starts with 00, replace with +
+                                if (cleaned.startsWith('00')) {
+                                    return '+' + cleaned.substring(2);
+                                }
+                                
+                                // Return cleaned number (just digits)
+                                return cleaned;
+                            }
+                            
+                            // Open SMS app directly with phone number and message pre-filled
+                            if (navigator.userAgent.match(/Mobile|Android|iPhone|iPad/i)) {
+                                // Format phone number properly
+                                const formattedPhone = formatPhoneForSMS(contact.phone);
+                                
+                                // Update status
+                                statusDiv.innerHTML = `
+                                    <div class="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                                        <span class="mr-2"><i class="fas fa-circle-notch fa-spin"></i></span>
+                                        <span>باز کردن اپلیکیشن SMS برای ${contact.name} (${i + 1}/${selectedContacts.length})...</span>
+                                    </div>
+                                `;
+                                
+                                // Try Web Share API first (if available)
+                                let opened = false;
+                                
+                                if (navigator.share && navigator.canShare) {
+                                    try {
+                                        // Try to share as SMS
+                                        const shareData = {
+                                            text: `${personalizedMessage}\n\nTo: ${formattedPhone}`,
+                                        };
+                                        
+                                        if (navigator.canShare(shareData)) {
+                                            await navigator.share(shareData);
+                                            opened = true;
+                                            console.log('Web Share API used successfully');
+                                        }
+                                    } catch (shareError) {
+                                        console.log('Web Share API failed, trying SMS link:', shareError);
+                                    }
+                                }
+                                
+                                // If Web Share didn't work, use SMS link
+                                if (!opened) {
+                                    // Create SMS link - use different formats for different platforms
+                                    let smsLink;
+                                    
+                                    if (navigator.userAgent.match(/Android/i)) {
+                                        // Android: sms:PHONE?body=MESSAGE
+                                        // Make sure phone doesn't have special characters that break the URL
+                                        const safePhone = encodeURIComponent(formattedPhone).replace(/%2B/g, '+');
+                                        smsLink = `sms:${safePhone}?body=${encodeURIComponent(personalizedMessage)}`;
+                                    } else {
+                                        // iOS: sms:PHONE&body=MESSAGE (use & instead of ?)
+                                        const safePhone = encodeURIComponent(formattedPhone).replace(/%2B/g, '+');
+                                        smsLink = `sms:${safePhone}&body=${encodeURIComponent(personalizedMessage)}`;
+                                    }
+                                    
+                                    // Method 1: Create link and click
+                                    try {
+                                        const link = document.createElement('a');
+                                        link.href = smsLink;
+                                        link.style.display = 'none';
+                                        link.setAttribute('target', '_self');
+                                        document.body.appendChild(link);
+                                        link.click();
+                                        
+                                        setTimeout(() => {
+                                            if (link.parentNode) {
+                                                document.body.removeChild(link);
+                                            }
+                                        }, 200);
+                                        
+                                        opened = true;
+                                        console.log('SMS link clicked successfully');
+                                    } catch (e) {
+                                        console.log('Method 1 failed:', e);
+                                    }
+                                    
+                                    // Method 2: Use window.location (fallback)
+                                    if (!opened) {
+                                        try {
+                                            window.location.href = smsLink;
+                                            opened = true;
+                                            console.log('window.location used');
+                                        } catch (e) {
+                                            console.log('Method 2 failed:', e);
+                                        }
+                                    }
+                                    
+                                    // Method 3: Use window.open (last resort)
+                                    if (!opened) {
+                                        try {
+                                            window.open(smsLink, '_self');
+                                            opened = true;
+                                            console.log('window.open used');
+                                        } catch (e) {
+                                            console.log('Method 3 failed:', e);
+                                        }
+                                    }
+                                }
+                                
+                                // Log for debugging
+                                console.log('Opening SMS for:', contact.name);
+                                console.log('Phone:', formattedPhone);
+                                console.log('SMS Link:', smsLink);
+                                
+                                // Wait a bit for SMS app to open
+                                await new Promise(resolve => setTimeout(resolve, 800));
+                                
+                                // Show instruction message only for first contact
+                                if (i === 0 && selectedContacts.length > 1) {
+                                    setTimeout(() => {
+                                        alert(`اپلیکیشن SMS باز شد.\n\nشماره: ${formattedPhone}\n\nلطفاً:\n1. پیام را بررسی کنید\n2. دکمه ارسال را بزنید\n3. بعد از ارسال، به مرورگر برگردید تا پیام بعدی باز شود\n\n(${selectedContacts.length - 1} مخاطب باقی مانده)`);
+                                    }, 1000);
+                                }
+                                
+                                // Wait for user to send SMS and return to browser
+                                // Longer delay to give user time to send the message
+                                const delay = i < selectedContacts.length - 1 ? 3000 : 1000;
+                                await new Promise(resolve => setTimeout(resolve, delay));
+                                
+                                successCount++;
+                            } else {
+                                // On desktop, copy to clipboard and show instructions
+                                await navigator.clipboard.writeText(personalizedMessage);
+                                alert(`پیام برای ${contact.name} در کلیپ‌بورد کپی شد.\n\nشماره: ${contact.phone}\n\nپیام: ${personalizedMessage}\n\nلطفاً به صورت دستی ارسال کنید.`);
+                                successCount++;
+                            }
+                        }
+                    } catch (error) {
+                        errorCount++;
+                        errors.push(`${contact.name}: ${error.message}`);
+                        console.error(`Error sending to ${contact.name}:`, error);
+                    }
+                }
+                
+                // Update status
+                if (errorCount === 0) {
+                    statusDiv.innerHTML = `
+                        <div class="inline-flex items-center px-4 py-2 rounded-full bg-green-100 text-green-800 text-sm font-medium">
+                            <span class="mr-2"><i class="fas fa-check-circle"></i></span>
+                            <span>Successfully sent to ${successCount} contact(s)</span>
+                        </div>
+                    `;
+                } else if (successCount > 0) {
+                    statusDiv.innerHTML = `
+                        <div class="inline-flex flex-col items-center px-4 py-2 rounded-full bg-yellow-100 text-yellow-800 text-sm font-medium">
+                            <span class="mb-1">
+                                <i class="fas fa-exclamation-triangle mr-2"></i>
+                                Sent to ${successCount}, Failed: ${errorCount}
+                            </span>
+                            <details class="text-xs mt-1">
+                                <summary class="cursor-pointer">View errors</summary>
+                                <ul class="list-disc list-inside mt-1 text-left">
+                                    ${errors.map(e => `<li>${e}</li>`).join('')}
+                                </ul>
+                            </details>
+                        </div>
+                    `;
+                } else {
+                    statusDiv.innerHTML = `
+                        <div class="inline-flex items-center px-4 py-2 rounded-full bg-red-100 text-red-800 text-sm font-medium">
+                            <span class="mr-2"><i class="fas fa-times-circle"></i></span>
+                            <span>Failed to send messages. Check console for details.</span>
+                        </div>
+                    `;
+                }
+                
+                sendBtn.disabled = false;
+                sendBtn.classList.remove('sending');
+                
+                // Reset after 8 seconds
+                setTimeout(() => {
+                    statusDiv.classList.add('hidden');
+                }, 8000);
+            });
+            
+            // Initial display
+            displayContacts();
+            updateSelectedContactsDisplay();
+            updateHospitalNameDisplay();
+            updatePreview();
+            
+            // Register Service Worker for PWA
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('./service-worker.js')
+                        .then((registration) => {
+                            console.log('Service Worker registered successfully:', registration.scope);
+                        })
+                        .catch((error) => {
+                            console.log('Service Worker registration failed:', error);
+                        });
+                });
+            }
+        });
+    </script>
+</body>
+</html>
